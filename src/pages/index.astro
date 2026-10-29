@@ -1,8 +1,16 @@
 ---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const [featuredPost, ...recentPosts] = posts;
 ---
 
 <!doctype html>
@@ -13,47 +21,488 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to
-				build a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your{' '}
-				<code>astro.config.mjs</code> file. You can customize your setup with{' '}
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like
-				Tailwind, React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>
-					Edit this page in <code>src/pages/index.astro</code>
-				</li>
-				<li>
-					Edit the site header items in <code>src/components/Header.astro</code>
-				</li>
-				<li>
-					Add your name to the footer in <code>src/components/Footer.astro</code>
-				</li>
-				<li>
-					Check out the included blog posts in <code>src/content/blog/</code>
-				</li>
-				<li>
-					Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code>
-				</li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to{' '}
-				<a href="https://docs.astro.build/">read the docs</a> or{' '}
-				<a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out{' '}
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a> by{' '}
-				<a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="intro" aria-labelledby="intro-title">
+				<p class="eyebrow"><span class="eyebrow-mark"></span> An independent journal</p>
+				<h1 id="intro-title">Ideas worth <span>looking closer.</span></h1>
+				<p class="intro-copy">
+					Notes on the curious corners of design, technology, and everything in between.
+				</p>
+				<a class="intro-link" href="/blog/">
+					Explore all writing
+					<svg viewBox="0 0 20 20" aria-hidden="true">
+						<path d="M4 10h12m-5-5 5 5-5 5" />
+					</svg>
+				</a>
+				<div class="intro-orbit orbit-one"></div>
+				<div class="intro-orbit orbit-two"></div>
+			</section>
+
+			<section class="journal" aria-labelledby="journal-title">
+				<div class="section-heading">
+					<div>
+						<p class="eyebrow">From the journal</p>
+						<h2 id="journal-title">The latest notes</h2>
+					</div>
+					<a class="all-posts" href="/blog/">Browse the archive <span aria-hidden="true">↗</span></a>
+				</div>
+
+				{featuredPost && (
+					<article class="featured-card">
+						<a class="featured-image" href={`/blog/${featuredPost.id}/`} aria-label={`Read ${featuredPost.data.title}`}>
+							{featuredPost.data.heroImage && (
+								<Image
+									src={featuredPost.data.heroImage}
+									alt=""
+									width={1120}
+									height={700}
+									loading="eager"
+								/>
+							)}
+							<span class="image-label">01 / FEATURED</span>
+						</a>
+						<div class="featured-copy">
+							<p class="post-meta">
+								<span>Featured story</span>
+								<span class="meta-dot"></span>
+								<FormattedDate date={featuredPost.data.pubDate} />
+							</p>
+							<h3><a href={`/blog/${featuredPost.id}/`}>{featuredPost.data.title}</a></h3>
+							<p class="post-description">{featuredPost.data.description}</p>
+							<a class="read-link" href={`/blog/${featuredPost.id}/`}>
+								Read the story <span aria-hidden="true">→</span>
+							</a>
+						</div>
+					</article>
+				)}
+
+				{recentPosts.length > 0 && (
+					<div class="recent-grid">
+						{recentPosts.slice(0, 3).map((post, index) => (
+							<article class="post-card">
+								<a class="card-image" href={`/blog/${post.id}/`} aria-label={`Read ${post.data.title}`}>
+									{post.data.heroImage && (
+										<Image src={post.data.heroImage} alt="" width={560} height={360} />
+									)}
+									<span class="card-number">0{index + 2}</span>
+								</a>
+								<div class="card-copy">
+									<p class="post-meta"><FormattedDate date={post.data.pubDate} /></p>
+									<h3><a href={`/blog/${post.id}/`}>{post.data.title}</a></h3>
+									<p class="post-description">{post.data.description}</p>
+								</div>
+							</article>
+						))}
+					</div>
+				)}
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	main {
+		width: min(1120px, calc(100% - 48px));
+		max-width: none;
+		padding: 0 0 112px;
+	}
+
+	.intro {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		padding: 112px 0 104px;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.intro::before {
+		position: absolute;
+		z-index: -1;
+		top: -190px;
+		right: -130px;
+		width: 660px;
+		height: 660px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgb(145 91 255 / 15%), rgb(145 91 255 / 0%) 68%);
+		content: '';
+		pointer-events: none;
+	}
+
+	.eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0 0 24px;
+		color: var(--muted);
+		font-size: 0.73rem;
+		font-weight: 700;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+	}
+
+	.eyebrow-mark {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--mint);
+		box-shadow: 0 0 14px rgb(124 245 197 / 65%);
+	}
+
+	.intro h1 {
+		max-width: 760px;
+		margin: 0;
+		color: var(--paper);
+		font-size: clamp(3.2rem, 8.5vw, 7rem);
+		font-weight: 700;
+		letter-spacing: -0.075em;
+		line-height: 0.98;
+	}
+
+	.intro h1 span {
+		color: transparent;
+		background: linear-gradient(100deg, #bba7ff 8%, #8e9dff 49%, #7cf5c5 100%);
+		background-clip: text;
+		-webkit-background-clip: text;
+	}
+
+	.intro-copy {
+		max-width: 480px;
+		margin: 26px 0 30px;
+		color: var(--muted);
+		font-size: 1.08rem;
+		line-height: 1.75;
+	}
+
+	.intro-link,
+	.read-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		color: var(--paper);
+		font-size: 0.9rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.intro-link {
+		padding: 12px 17px;
+		border: 1px solid rgb(187 167 255 / 42%);
+		border-radius: 999px;
+		background: rgb(187 167 255 / 7%);
+		transition: background 180ms ease, border-color 180ms ease;
+	}
+
+	.intro-link:hover {
+		border-color: var(--lavender);
+		background: rgb(187 167 255 / 15%);
+	}
+
+	.intro-link svg {
+		width: 18px;
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+		transition: transform 180ms ease;
+	}
+
+	.intro-link:hover svg {
+		transform: translateX(3px);
+	}
+
+	.intro-orbit {
+		position: absolute;
+		z-index: -1;
+		top: 50%;
+		right: 4%;
+		width: 178px;
+		height: 178px;
+		border: 1px solid rgb(187 167 255 / 24%);
+		border-radius: 50%;
+		transform: translateY(-50%);
+	}
+
+	.orbit-two {
+		right: calc(4% + 28px);
+		width: 122px;
+		height: 122px;
+		border-color: rgb(124 245 197 / 30%);
+	}
+
+	.section-heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 24px;
+		margin: 68px 0 28px;
+	}
+
+	.section-heading .eyebrow {
+		margin-bottom: 10px;
+	}
+
+	.section-heading h2 {
+		margin: 0;
+		color: var(--paper);
+		font-size: clamp(1.8rem, 4vw, 2.45rem);
+		letter-spacing: -0.05em;
+	}
+
+	.all-posts {
+		padding-bottom: 5px;
+		color: var(--muted);
+		font-size: 0.83rem;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.all-posts span {
+		margin-left: 5px;
+		color: var(--mint);
+	}
+
+	.all-posts:hover,
+	.read-link:hover {
+		color: var(--mint);
+	}
+
+	.featured-card {
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+		overflow: hidden;
+		border: 1px solid var(--line);
+		border-radius: 18px;
+		background: var(--surface);
+	}
+
+	.featured-image,
+	.card-image {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		background:
+			radial-gradient(ellipse at 30% 20%, rgb(181 148 255 / 60%), transparent 48%),
+			linear-gradient(135deg, #27233c, #151921 65%, #18342c);
+	}
+
+	.featured-image {
+		min-height: 380px;
+	}
+
+	.featured-image img,
+	.card-image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 350ms ease;
+	}
+
+	.featured-image:hover img,
+	.card-image:hover img {
+		transform: scale(1.035);
+	}
+
+	.image-label,
+	.card-number {
+		position: absolute;
+		bottom: 18px;
+		left: 18px;
+		padding: 7px 10px;
+		border: 1px solid rgb(255 255 255 / 16%);
+		border-radius: 999px;
+		background: rgb(17 18 24 / 70%);
+		color: white;
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		backdrop-filter: blur(12px);
+	}
+
+	.featured-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		padding: clamp(28px, 5vw, 60px);
+	}
+
+	.post-meta {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0 0 17px;
+		color: var(--muted);
+		font-size: 0.75rem;
+		letter-spacing: 0.035em;
+	}
+
+	.post-meta > span:first-child {
+		color: var(--mint);
+		font-weight: 700;
+	}
+
+	.meta-dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: var(--muted);
+	}
+
+	.featured-copy h3,
+	.card-copy h3 {
+		margin: 0;
+		font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+		letter-spacing: -0.055em;
+		line-height: 1.15;
+	}
+
+	.featured-copy h3 a,
+	.card-copy h3 a {
+		color: var(--paper);
+		text-decoration: none;
+	}
+
+	.featured-copy h3 a:hover,
+	.card-copy h3 a:hover {
+		color: var(--lavender);
+	}
+
+	.post-description {
+		margin: 16px 0 22px;
+		color: var(--muted);
+		font-size: 0.92rem;
+		line-height: 1.7;
+	}
+
+	.read-link {
+		margin-top: 4px;
+		color: var(--lavender);
+		font-size: 0.83rem;
+	}
+
+	.recent-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 22px;
+		margin-top: 22px;
+	}
+
+	.post-card {
+		overflow: hidden;
+		border: 1px solid var(--line);
+		border-radius: 16px;
+		background: var(--surface);
+	}
+
+	.card-image {
+		aspect-ratio: 1.58;
+	}
+
+	.card-number {
+		bottom: 12px;
+		left: 12px;
+		min-width: 32px;
+		padding: 6px 9px;
+		text-align: center;
+	}
+
+	.card-copy {
+		padding: 22px 22px 24px;
+	}
+
+	.card-copy .post-meta {
+		margin-bottom: 11px;
+	}
+
+	.card-copy h3 {
+		font-size: 1.3rem;
+	}
+
+	.card-copy .post-description {
+		margin-bottom: 0;
+		font-size: 0.84rem;
+	}
+
+	@media (max-width: 760px) {
+		main {
+			width: min(100% - 36px, 560px);
+			padding-bottom: 76px;
+		}
+
+		.intro {
+			padding: 84px 0 78px;
+		}
+
+		.intro-orbit {
+			top: 18%;
+			right: -32px;
+			width: 120px;
+			height: 120px;
+		}
+
+		.orbit-two {
+			right: -10px;
+			width: 78px;
+			height: 78px;
+		}
+
+		.intro-copy {
+			max-width: 420px;
+		}
+
+		.section-heading {
+			margin-top: 52px;
+		}
+
+		.featured-card {
+			grid-template-columns: 1fr;
+		}
+
+		.featured-image {
+			min-height: 0;
+			aspect-ratio: 1.55;
+		}
+
+		.featured-copy {
+			padding: 28px;
+		}
+
+		.recent-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 14px;
+		}
+
+		.card-copy {
+			padding: 18px;
+		}
+	}
+
+	@media (max-width: 520px) {
+		.intro {
+			padding: 72px 0 68px;
+		}
+
+		.intro h1 {
+			font-size: clamp(3.15rem, 15vw, 4.5rem);
+		}
+
+		.intro-orbit {
+			opacity: 0.5;
+		}
+
+		.section-heading {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 12px;
+		}
+
+		.recent-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.card-image {
+			aspect-ratio: 1.8;
+		}
+	}
+</style>
